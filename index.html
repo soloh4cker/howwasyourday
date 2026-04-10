@@ -278,9 +278,9 @@
     measurementId: "G-SE6F17NCP4"
   };
 
-    const hasFirebaseConfig = !Object.values(FIREBASE_CONFIG).some(v => String(v).startsWith('PASTE_YOUR_'));
-    const app = hasFirebaseConfig ? initializeApp(FIREBASE_CONFIG) : null;
-    const db = hasFirebaseConfig ? getFirestore(app) : null;
+    const hasFirebaseConfig = !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
+const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
+const db = hasFirebaseConfig ? getFirestore(app) : null;
 
     const els = {
       todayTab: document.getElementById('todayTab'),
@@ -464,9 +464,15 @@
       setTopError('');
       try {
         const reviewsRef = collection(db, 'reviews');
-        const q = query(reviewsRef, where('dateKey', '==', selectedDateKey), orderBy('createdAt', 'desc'));
+        const q = query(reviewsRef, where('dateKey', '==', selectedDateKey));
         const snap = await getDocs(q);
-        const reviews = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const reviews = snap.docs
+  .map(doc => ({ id: doc.id, ...doc.data() }))
+  .sort((a, b) => {
+    const aMs = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+    const bMs = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+    return bMs - aMs;
+  });
         renderSummary(reviews);
         renderReviews(reviews);
       } catch (err) {
