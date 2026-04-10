@@ -268,14 +268,15 @@
       Timestamp
     } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-    const FIREBASE_CONFIG = {
-      apiKey: 'PASTE_YOUR_API_KEY',
-      authDomain: 'PASTE_YOUR_AUTH_DOMAIN',
-      projectId: 'PASTE_YOUR_PROJECT_ID',
-      storageBucket: 'PASTE_YOUR_STORAGE_BUCKET',
-      messagingSenderId: 'PASTE_YOUR_MESSAGING_SENDER_ID',
-      appId: 'PASTE_YOUR_APP_ID'
-    };
+    const firebaseConfig = {
+    apiKey: "AIzaSyAOFO7vGOy6j_iaTLOksIz-ACk6NAuvK7o",
+    authDomain: "howwasyourday-48ed0.firebaseapp.com",
+    projectId: "howwasyourday-48ed0",
+    storageBucket: "howwasyourday-48ed0.firebasestorage.app",
+    messagingSenderId: "520047025531",
+    appId: "1:520047025531:web:c6f557c8b77d112b36f1de",
+    measurementId: "G-SE6F17NCP4"
+  };
 
     const hasFirebaseConfig = !Object.values(FIREBASE_CONFIG).some(v => String(v).startsWith('PASTE_YOUR_'));
     const app = hasFirebaseConfig ? initializeApp(FIREBASE_CONFIG) : null;
