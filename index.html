@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How Was Your Day?</title>
+  <meta name="description" content="Review the current day like a product. Browse past days and see what the internet thought." />
+  <style>
+    :root{
+      --bg:#fbf7f1;
+      --paper:rgba(255,255,255,.78);
+      --paper-strong:#fffdf9;
+      --ink:#202432;
+      --muted:#667085;
+      --line:#eadfcd;
+      --accent:#ffb84d;
+      --accent-2:#7bd3c8;
+      --accent-3:#ff8fab;
+      --accent-4:#8ea2ff;
+      --star:#ffb84d;
+      --danger:#b42318;
+      --danger-bg:#fff1f0;
+      --shadow:0 18px 40px rgba(31,36,48,.09);
+      --radius:28px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      min-height:100vh;
+      font-family:Inter,ui-rounded,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255,184,77,.18), transparent 28%),
+        radial-gradient(circle at 85% 12%, rgba(123,211,200,.18), transparent 26%),
+        radial-gradient(circle at 80% 82%, rgba(255,143,171,.14), transparent 24%),
+        linear-gradient(180deg,#fcf8f2 0%, #f6f0e6 100%);
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 80px}
+    .hero{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap;margin-bottom:22px}
+    .badge{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:10px 14px;border:1px solid var(--line);border-radius:999px;
+      background:rgba(255,255,255,.65);backdrop-filter:blur(14px);font-size:14px;color:#5b6270;
+      box-shadow:0 8px 25px rgba(0,0,0,.04);
+    }
+    .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-3))}
+    h1{font-size:clamp(40px,8vw,74px);line-height:.94;margin:16px 0 12px;font-weight:900;letter-spacing:-.05em}
+    .subtitle{max-width:720px;font-size:18px;line-height:1.6;color:#5f6674;margin:0}
+    .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .nav button{
+      border:none;border-radius:18px;padding:13px 16px;font-size:14px;font-weight:800;cursor:pointer;
+      background:rgba(255,255,255,.76);border:1px solid var(--line);color:#344054;box-shadow:0 8px 25px rgba(0,0,0,.04)
+    }
+    .nav button.active{background:linear-gradient(135deg,#1f2430,#394255);color:white;border-color:transparent}
+    .card{
+      background:var(--paper);backdrop-filter:blur(16px);border:1px solid rgba(234,223,205,.9);
+      border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+    }
+    .card-inner{padding:26px}
+    .header-strip{height:8px;background:linear-gradient(90deg,var(--accent),var(--accent-2),var(--accent-3),var(--accent-4))}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}
+    .date-hero{
+      background:linear-gradient(180deg,#fffefb 0%, #f9f2e6 100%);
+      border:1px solid var(--line);border-radius:26px;padding:28px;min-height:280px;
+      display:flex;flex-direction:column;justify-content:space-between;
+    }
+    .weekday-chip{
+      display:inline-flex;align-items:center;gap:8px;width:max-content;
+      padding:9px 12px;border-radius:999px;background:#fff7e9;border:1px solid #efdaae;
+      color:#7a5b17;font-weight:800;font-size:13px;
+    }
+    .date-big{font-size:clamp(48px,9vw,88px);font-weight:900;line-height:.92;letter-spacing:-.06em;margin:14px 0 8px}
+    .date-sub{font-size:18px;color:#5f6674;line-height:1.5;max-width:460px}
+    .summary{
+      background:linear-gradient(180deg,#fffefb 0%, #faf7f1 100%);
+      border:1px solid var(--line);border-radius:26px;padding:24px;
+    }
+    .summary .k{font-size:14px;color:#667085;margin-bottom:8px}
+    .score{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+    .score .num{font-size:clamp(50px,8vw,76px);font-weight:900;letter-spacing:-.06em;line-height:1}
+    .score .out{font-size:22px;color:#667085;padding-bottom:8px}
+    .stars{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .star{font-size:28px;line-height:1;color:#e6dcc8}
+    .star.filled{color:var(--star)}
+    .muted{color:#667085}
+    .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+    .mini{
+      background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:20px;padding:16px;
+    }
+    .mini .label{font-size:13px;color:#667085;margin-bottom:6px}
+    .mini .value{font-size:28px;font-weight:900;letter-spacing:-.04em}
+    .section-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap;margin:22px 0 16px}
+    .section-head h2{margin:0;font-size:28px;letter-spacing:-.04em}
+    .section-head p{margin:0;color:#667085}
+    .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .btn{
+      border:none;border-radius:18px;padding:14px 18px;font-size:15px;font-weight:800;cursor:pointer;transition:.18s ease;
+    }
+    .btn-primary{background:linear-gradient(135deg,#1f2430,#394255);color:white;box-shadow:0 14px 30px rgba(31,36,48,.18)}
+    .btn-primary:hover{transform:translateY(-1px)}
+    .btn-soft{background:#fffefb;color:#334155;border:1px solid #dccfb8}
+    .btn-soft:hover{background:#fbf8f1}
+    input[type="date"]{
+      padding:13px 15px;border:1px solid #ddd2bc;border-radius:18px;background:#fffefb;font-size:15px;color:var(--ink);outline:none;
+    }
+    .reviews{display:grid;gap:14px}
+    .review{
+      background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:24px;padding:18px 18px 16px;
+    }
+    .review-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+    .review-name{font-size:16px;font-weight:900;letter-spacing:-.02em}
+    .review-date{font-size:13px;color:#667085}
+    .review-body{font-size:15px;line-height:1.7;color:#4f5665;white-space:pre-wrap}
+    .empty{
+      background:linear-gradient(180deg,#fffefb 0%, #faf6ef 100%);
+      border:1px dashed #e4d4b5;border-radius:24px;padding:24px;color:#667085;line-height:1.7;text-align:center;
+    }
+    .notice{
+      margin-top:14px;padding:14px 16px;border-radius:18px;font-size:14px;line-height:1.55;
+      background:#eefaf7;border:1px solid #b7e9dd;color:#0f766e;
+    }
+    .error{
+      margin-top:14px;padding:14px 16px;border-radius:18px;font-size:14px;line-height:1.55;
+      background:var(--danger-bg);border:1px solid #f7c2bf;color:var(--danger)
+    }
+    .hidden{display:none !important}
+    .modal-backdrop{
+      position:fixed;inset:0;background:rgba(15,23,42,.42);backdrop-filter:blur(6px);
+      display:flex;align-items:center;justify-content:center;padding:18px;z-index:50;
+    }
+    .modal{
+      width:min(560px,100%);background:var(--paper-strong);border:1px solid var(--line);border-radius:30px;box-shadow:0 24px 60px rgba(31,36,48,.18);overflow:hidden;
+    }
+    .modal-inner{padding:24px}
+    .modal h3{margin:0 0 6px;font-size:30px;letter-spacing:-.04em}
+    .modal p{margin:0 0 18px;color:#667085;line-height:1.6}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:14px;font-weight:800;color:#475467;margin-bottom:8px}
+    .field input,.field textarea{
+      width:100%;padding:14px 15px;border:1px solid #ddd2bc;border-radius:18px;background:#fffefb;font-size:16px;color:var(--ink);outline:none;
+    }
+    .field textarea{min-height:140px;resize:vertical;line-height:1.55}
+    .field input:focus,.field textarea:focus{border-color:#c7ae7b;box-shadow:0 0 0 4px rgba(255,184,77,.18)}
+    .star-picker{display:flex;gap:8px;flex-wrap:wrap;font-size:38px;line-height:1}
+    .pick{cursor:pointer;color:#e6dcc8;transition:transform .12s ease,color .12s ease}
+    .pick.active{color:var(--star)}
+    .pick:hover{transform:translateY(-1px)}
+    .modal-actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
+    .footnote{margin-top:14px;font-size:13px;color:#667085;line-height:1.6}
+    @media (max-width:920px){.grid{grid-template-columns:1fr}.wrap{padding:22px 16px 72px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <div class="badge"><span class="dot"></span> A daily review experiment</div>
+        <h1>How was your day?</h1>
+        <p class="subtitle">Review the current day like a product. Browse past dates, see what the internet thought, and leave your own little note for today.</p>
+      </div>
+      <div class="nav">
+        <button id="todayTab" class="active" type="button">Today</button>
+        <button id="historyTab" type="button">History</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="header-strip"></div>
+      <div class="card-inner">
+        <div id="topError" class="error hidden"></div>
+
+        <div class="grid">
+          <div class="date-hero">
+            <div>
+              <div class="weekday-chip" id="weekdayChip">Today in UTC+8</div>
+              <div class="date-big" id="heroDate">Friday</div>
+              <div class="date-big" id="heroMonthDay" style="font-size:clamp(30px,6vw,54px);margin-top:2px;">April 10, 2026</div>
+              <p class="date-sub" id="heroSub">A fresh day is ready to be reviewed.</p>
+            </div>
+            <div class="footnote">The active day changes automatically at midnight in <strong>UTC+8</strong>.</div>
+          </div>
+
+          <div class="summary">
+            <div class="k">Average rating</div>
+            <div class="score">
+              <div class="num" id="avgRating">—</div>
+              <div class="out">/ 5</div>
+            </div>
+            <div class="stars" id="avgStars"></div>
+
+            <div class="stat-row">
+              <div class="mini">
+                <div class="label">Total reviews</div>
+                <div class="value" id="reviewCount">0</div>
+              </div>
+              <div class="mini">
+                <div class="label">Mode</div>
+                <div class="value" id="pageMode">Today</div>
+              </div>
+            </div>
+
+            <div class="notice" id="modeNotice">You can review only the current active day. Past dates are view-only.</div>
+
+            <div class="toolbar" style="margin-top:18px">
+              <button id="openReviewBtn" class="btn btn-primary" type="button">Rate this day</button>
+              <label class="btn btn-soft" for="historyPicker" style="display:inline-flex;align-items:center;cursor:pointer">Pick a date</label>
+              <input id="historyPicker" type="date" class="hidden" />
+            </div>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <h2 id="reviewsHeading">Today’s reviews</h2>
+            <p id="reviewsSub">See what people thought about this day.</p>
+          </div>
+        </div>
+
+        <div id="reviewsList" class="reviews"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="reviewModal" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="header-strip"></div>
+      <div class="modal-inner">
+        <h3 id="modalTitle">Review this day</h3>
+        <p id="modalDateText">Leave a tiny note for today.</p>
+
+        <div class="field">
+          <label>Your rating</label>
+          <div id="starPicker" class="star-picker" aria-label="Choose rating"></div>
+        </div>
+
+        <div class="field">
+          <label for="nameInput">Your name</label>
+          <input id="nameInput" type="text" maxlength="32" placeholder="e.g. Alex" />
+        </div>
+
+        <div class="field">
+          <label for="reviewInput">Your review</label>
+          <textarea id="reviewInput" maxlength="280" placeholder="What was good, weird, exhausting, funny, or unforgettable about this day?"></textarea>
+        </div>
+
+        <div id="modalError" class="error hidden"></div>
+
+        <div class="modal-actions">
+          <button id="closeModalBtn" class="btn btn-soft" type="button">Cancel</button>
+          <button id="submitReviewBtn" class="btn btn-primary" type="button">Submit review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      query,
+      where,
+      orderBy,
+      getDocs,
+      serverTimestamp,
+      Timestamp
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey: 'PASTE_YOUR_API_KEY',
+      authDomain: 'PASTE_YOUR_AUTH_DOMAIN',
+      projectId: 'PASTE_YOUR_PROJECT_ID',
+      storageBucket: 'PASTE_YOUR_STORAGE_BUCKET',
+      messagingSenderId: 'PASTE_YOUR_MESSAGING_SENDER_ID',
+      appId: 'PASTE_YOUR_APP_ID'
+    };
+
+    const hasFirebaseConfig = !Object.values(FIREBASE_CONFIG).some(v => String(v).startsWith('PASTE_YOUR_'));
+    const app = hasFirebaseConfig ? initializeApp(FIREBASE_CONFIG) : null;
+    const db = hasFirebaseConfig ? getFirestore(app) : null;
+
+    const els = {
+      todayTab: document.getElementById('todayTab'),
+      historyTab: document.getElementById('historyTab'),
+      historyPicker: document.getElementById('historyPicker'),
+      weekdayChip: document.getElementById('weekdayChip'),
+      heroDate: document.getElementById('heroDate'),
+      heroMonthDay: document.getElementById('heroMonthDay'),
+      heroSub: document.getElementById('heroSub'),
+      avgRating: document.getElementById('avgRating'),
+      avgStars: document.getElementById('avgStars'),
+      reviewCount: document.getElementById('reviewCount'),
+      pageMode: document.getElementById('pageMode'),
+      modeNotice: document.getElementById('modeNotice'),
+      reviewsHeading: document.getElementById('reviewsHeading'),
+      reviewsSub: document.getElementById('reviewsSub'),
+      reviewsList: document.getElementById('reviewsList'),
+      openReviewBtn: document.getElementById('openReviewBtn'),
+      topError: document.getElementById('topError'),
+      reviewModal: document.getElementById('reviewModal'),
+      modalDateText: document.getElementById('modalDateText'),
+      starPicker: document.getElementById('starPicker'),
+      nameInput: document.getElementById('nameInput'),
+      reviewInput: document.getElementById('reviewInput'),
+      modalError: document.getElementById('modalError'),
+      closeModalBtn: document.getElementById('closeModalBtn'),
+      submitReviewBtn: document.getElementById('submitReviewBtn')
+    };
+
+    const TIMEZONE = 'Asia/Singapore'; // UTC+8
+    let selectedDateKey = getTodayKeyUTC8();
+    let activeMode = 'today';
+    let selectedRating = 0;
+
+    function getDatePartsInUTC8(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        weekday: 'long'
+      }).formatToParts(date);
+      const map = Object.fromEntries(parts.filter(p => p.type !== 'literal').map(p => [p.type, p.value]));
+      return map;
+    }
+
+    function getTodayKeyUTC8() {
+      const p = getDatePartsInUTC8(new Date());
+      return `${p.year}-${p.month}-${p.day}`;
+    }
+
+    function formatPrettyDate(dateKey) {
+      const [y,m,d] = dateKey.split('-').map(Number);
+      const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: TIMEZONE,
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      }).format(date);
+    }
+
+    function getWeekday(dateKey) {
+      const [y,m,d] = dateKey.split('-').map(Number);
+      const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+      return new Intl.DateTimeFormat('en-US', { timeZone: TIMEZONE, weekday: 'long' }).format(date);
+    }
+
+    function getMonthDay(dateKey) {
+      const [y,m,d] = dateKey.split('-').map(Number);
+      const date = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: TIMEZONE,
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      }).format(date);
+    }
+
+    function escapeHtml(str='') {
+      return str.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    }
+
+    function renderStars(target, value, max = 5) {
+      target.innerHTML = Array.from({ length: max }, (_, i) => `<span class="star ${i < Math.round(value) ? 'filled' : ''}">★</span>`).join('');
+    }
+
+    function setTopError(msg='') {
+      if (!msg) {
+        els.topError.classList.add('hidden');
+        els.topError.textContent = '';
+        return;
+      }
+      els.topError.textContent = msg;
+      els.topError.classList.remove('hidden');
+    }
+
+    function setModalError(msg='') {
+      if (!msg) {
+        els.modalError.classList.add('hidden');
+        els.modalError.textContent = '';
+        return;
+      }
+      els.modalError.textContent = msg;
+      els.modalError.classList.remove('hidden');
+    }
+
+    function buildStarPicker() {
+      els.starPicker.innerHTML = Array.from({ length: 5 }, (_, i) => `<span class="pick" data-value="${i + 1}">★</span>`).join('');
+      updatePicker();
+      [...els.starPicker.querySelectorAll('.pick')].forEach(node => {
+        node.addEventListener('click', () => {
+          selectedRating = Number(node.dataset.value);
+          updatePicker();
+        });
+      });
+    }
+
+    function updatePicker() {
+      [...els.starPicker.querySelectorAll('.pick')].forEach(node => {
+        node.classList.toggle('active', Number(node.dataset.value) <= selectedRating);
+      });
+    }
+
+    function openModal() {
+      if (selectedDateKey !== getTodayKeyUTC8()) {
+        setTopError('You can only submit a review for the current active day.');
+        return;
+      }
+      els.modalDateText.textContent = `Leave a tiny note for ${formatPrettyDate(selectedDateKey)}.`;
+      els.reviewModal.classList.remove('hidden');
+      els.reviewModal.setAttribute('aria-hidden', 'false');
+      setModalError('');
+    }
+
+    function closeModal() {
+      els.reviewModal.classList.add('hidden');
+      els.reviewModal.setAttribute('aria-hidden', 'true');
+      setModalError('');
+    }
+
+    function setMode(mode) {
+      activeMode = mode;
+      els.todayTab.classList.toggle('active', mode === 'today');
+      els.historyTab.classList.toggle('active', mode === 'history');
+      if (mode === 'today') {
+        selectedDateKey = getTodayKeyUTC8();
+      }
+      renderShell();
+      loadReviews();
+    }
+
+    function renderShell() {
+      const todayKey = getTodayKeyUTC8();
+      const isToday = selectedDateKey === todayKey;
+      els.weekdayChip.textContent = isToday ? 'Today in UTC+8' : 'History view';
+      els.heroDate.textContent = getWeekday(selectedDateKey);
+      els.heroMonthDay.textContent = getMonthDay(selectedDateKey);
+      els.heroSub.textContent = isToday ? 'A fresh day is ready to be reviewed.' : 'Browsing what people thought about this day.';
+      els.pageMode.textContent = isToday ? 'Today' : 'History';
+      els.modeNotice.textContent = isToday
+        ? 'You can review only the current active day. Past dates are view-only.'
+        : 'This is a past date. You can browse reviews here, but new reviews are only allowed for the current UTC+8 day.';
+      els.reviewsHeading.textContent = isToday ? 'Today’s reviews' : `${formatPrettyDate(selectedDateKey)} reviews`;
+      els.reviewsSub.textContent = isToday ? 'See what people thought about this day.' : 'A small archive of how the internet felt on this date.';
+      els.openReviewBtn.disabled = !isToday;
+      els.openReviewBtn.style.opacity = isToday ? '1' : '.55';
+      els.openReviewBtn.style.cursor = isToday ? 'pointer' : 'not-allowed';
+      els.historyPicker.value = selectedDateKey;
+    }
+
+    async function loadReviews() {
+      renderLoading();
+      if (!hasFirebaseConfig) {
+        setTopError('Firebase is not connected yet. Add your Firebase config in index.html, then the live reviews will appear here.');
+        renderSummary([]);
+        renderEmpty('Firebase is not connected yet. Once you add your Firebase config and Firestore rules, this page will show live shared reviews.');
+        return;
+      }
+      setTopError('');
+      try {
+        const reviewsRef = collection(db, 'reviews');
+        const q = query(reviewsRef, where('dateKey', '==', selectedDateKey), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        const reviews = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderSummary(reviews);
+        renderReviews(reviews);
+      } catch (err) {
+        console.error(err);
+        setTopError('Could not load reviews yet. This usually means Firestore is not set up or rules still need updating.');
+        renderSummary([]);
+        renderEmpty('No reviews could be loaded right now.');
+      }
+    }
+
+    function renderLoading() {
+      els.reviewsList.innerHTML = '<div class="empty">Loading reviews…</div>';
+    }
+
+    function renderSummary(reviews) {
+      const count = reviews.length;
+      const avg = count ? reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / count : 0;
+      els.reviewCount.textContent = new Intl.NumberFormat('en-US').format(count);
+      els.avgRating.textContent = count ? avg.toFixed(2) : '—';
+      renderStars(els.avgStars, avg || 0);
+    }
+
+    function renderEmpty(message) {
+      els.reviewsList.innerHTML = `<div class="empty">${message}</div>`;
+    }
+
+    function renderReviews(reviews) {
+      if (!reviews.length) {
+        renderEmpty('No reviews yet for this day. Be the first one when it becomes the active day.');
+        return;
+      }
+      els.reviewsList.innerHTML = reviews.map(review => {
+        const created = review.createdAt?.toDate ? review.createdAt.toDate() : null;
+        const createdText = created ? new Intl.DateTimeFormat('en-US', {
+          timeZone: TIMEZONE,
+          month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+        }).format(created) : 'Just now';
+        const stars = Array.from({ length: 5 }, (_, i) => `<span class="star ${i < review.rating ? 'filled' : ''}">★</span>`).join('');
+        return `
+          <article class="review">
+            <div class="review-top">
+              <div>
+                <div class="review-name">${escapeHtml(review.name || 'Anonymous')}</div>
+                <div class="stars">${stars}</div>
+              </div>
+              <div class="review-date">${createdText}</div>
+            </div>
+            <div class="review-body">${escapeHtml(review.text || '')}</div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    async function submitReview() {
+      setModalError('');
+      if (!hasFirebaseConfig) {
+        setModalError('Firebase is not connected yet. Add your config first, then submitting will work.');
+        return;
+      }
+      const name = els.nameInput.value.trim();
+      const text = els.reviewInput.value.trim();
+      if (!selectedRating) return setModalError('Please choose a star rating.');
+      if (!name) return setModalError('Please enter your name.');
+      if (!text) return setModalError('Please write a short review.');
+      if (name.length > 32) return setModalError('Your name is a bit too long.');
+      if (text.length > 280) return setModalError('Please keep your review under 280 characters.');
+      try {
+        await addDoc(collection(db, 'reviews'), {
+          dateKey: getTodayKeyUTC8(),
+          rating: selectedRating,
+          name,
+          text,
+          createdAt: serverTimestamp()
+        });
+        els.nameInput.value = '';
+        els.reviewInput.value = '';
+        selectedRating = 0;
+        updatePicker();
+        closeModal();
+        selectedDateKey = getTodayKeyUTC8();
+        activeMode = 'today';
+        renderShell();
+        loadReviews();
+      } catch (err) {
+        console.error(err);
+        setModalError('Could not submit review yet. Check your Firestore rules and Firebase config.');
+      }
+    }
+
+    els.todayTab.addEventListener('click', () => setMode('today'));
+    els.historyTab.addEventListener('click', () => {
+      activeMode = 'history';
+      els.todayTab.classList.remove('active');
+      els.historyTab.classList.add('active');
+      renderShell();
+      loadReviews();
+    });
+    els.historyPicker.addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      selectedDateKey = e.target.value;
+      activeMode = selectedDateKey === getTodayKeyUTC8() ? 'today' : 'history';
+      renderShell();
+      loadReviews();
+    });
+    els.openReviewBtn.addEventListener('click', openModal);
+    els.closeModalBtn.addEventListener('click', closeModal);
+    els.submitReviewBtn.addEventListener('click', submitReview);
+    els.reviewModal.addEventListener('click', (e) => { if (e.target === els.reviewModal) closeModal(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    buildStarPicker();
+    renderShell();
+    loadReviews();
+  </script>
+</body>
+</html>
