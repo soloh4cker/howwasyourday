@@ -3,1336 +3,160 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>How Was Your Day?</title>
-  <meta name="description" content="Review the current day like a product. Browse past days, see ratings, and explore the internet’s mood one day at a time." />
-  <style>
-    :root {
-      --bg-1: #fff7f2;
-      --bg-2: #f9f7ff;
-      --ink: #1e2230;
-      --muted: #667085;
-      --line: rgba(57, 42, 80, 0.1);
-      --card: rgba(255,255,255,0.72);
-      --card-strong: rgba(255,255,255,0.88);
-      --shadow: 0 22px 50px rgba(29, 33, 56, 0.12);
-      --yellow: #ffbe55;
-      --mint: #6ed9c8;
-      --pink: #ff8cb1;
-      --violet: #8f96ff;
-      --peach: #ff9c73;
-      --star: #ffba4a;
-      --danger: #b42318;
-      --danger-bg: #fff1f0;
-      --radius-xl: 34px;
-      --radius-lg: 26px;
-      --radius-md: 18px;
-      --max: 1140px;
-    }
-
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body {
-      min-height: 100vh;
-      font-family: Inter, ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 8% 10%, rgba(255,190,85,.35), transparent 24%),
-        radial-gradient(circle at 85% 10%, rgba(143,150,255,.26), transparent 26%),
-        radial-gradient(circle at 20% 85%, rgba(110,217,200,.24), transparent 24%),
-        radial-gradient(circle at 88% 80%, rgba(255,140,177,.22), transparent 24%),
-        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
-      overflow-x: hidden;
-    }
-
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      inset: auto;
-      width: 340px;
-      height: 340px;
-      border-radius: 50%;
-      filter: blur(80px);
-      pointer-events: none;
-      z-index: 0;
-      opacity: .28;
-    }
-
-    body::before {
-      top: -80px;
-      left: -70px;
-      background: linear-gradient(135deg, var(--yellow), var(--peach));
-    }
-
-    body::after {
-      bottom: -100px;
-      right: -80px;
-      background: linear-gradient(135deg, var(--mint), var(--violet));
-    }
-
-    button, input, textarea { font: inherit; }
-    a { color: inherit; text-decoration: none; }
-
-    .wrap {
-      position: relative;
-      z-index: 1;
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 28px 18px 80px;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.62);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 10px 24px rgba(0,0,0,.04);
-      color: #5a6172;
-      font-size: 14px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--yellow), var(--pink));
-    }
-
-    h1 {
-      margin: 16px 0 10px;
-      font-size: clamp(42px, 8vw, 82px);
-      line-height: .94;
-      font-weight: 900;
-      letter-spacing: -.055em;
-    }
-
-    .subtitle {
-      max-width: 760px;
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.65;
-      color: #60697a;
-    }
-
-    .tabs {
-      display: inline-flex;
-      padding: 6px;
-      gap: 6px;
-      border-radius: 20px;
-      background: rgba(255,255,255,.62);
-      border: 1px solid var(--line);
-      box-shadow: 0 10px 24px rgba(0,0,0,.04);
-      backdrop-filter: blur(14px);
-    }
-
-    .tab-btn {
-      border: none;
-      background: transparent;
-      color: #455064;
-      padding: 13px 18px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: .18s ease;
-    }
-
-    .tab-btn.active {
-      background: linear-gradient(135deg, #1f2430, #384257);
-      color: white;
-      box-shadow: 0 10px 24px rgba(31,36,48,.18);
-    }
-
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 18px;
-      margin-bottom: 22px;
-    }
-
-    .card {
-      background: var(--card);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,.55);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .card-inner { padding: 26px; }
-    .gradient-strip {
-      height: 8px;
-      background: linear-gradient(90deg, var(--yellow), var(--mint), var(--pink), var(--violet));
-    }
-
-    .today-card {
-      position: relative;
-      min-height: 380px;
-      background:
-        radial-gradient(circle at 80% 18%, rgba(255,190,85,.25), transparent 22%),
-        radial-gradient(circle at 25% 82%, rgba(110,217,200,.18), transparent 24%),
-        linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(255,247,236,.92) 100%);
-    }
-
-    .bubble {
-      display: inline-flex;
-      width: max-content;
-      padding: 9px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,190,85,.35);
-      background: rgba(255,247,227,.9);
-      color: #805b13;
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 18px;
-    }
-
-    .day-line {
-      font-size: clamp(42px, 10vw, 96px);
-      font-weight: 900;
-      letter-spacing: -.06em;
-      line-height: .9;
-      margin: 0;
-    }
-
-    .date-line {
-      margin-top: 8px;
-      font-size: clamp(24px, 5vw, 44px);
-      font-weight: 800;
-      letter-spacing: -.045em;
-    }
-
-    .hero-copy {
-      max-width: 520px;
-      margin-top: 16px;
-      color: #5d6677;
-      font-size: 17px;
-      line-height: 1.65;
-    }
-
-    .action-row {
-      margin-top: 26px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 18px;
-      padding: 14px 18px;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: .18s ease;
-    }
-
-    .btn-primary {
-      color: white;
-      background: linear-gradient(135deg, #1f2430, #394255);
-      box-shadow: 0 16px 32px rgba(31,36,48,.18);
-    }
-
-    .btn-primary:hover { transform: translateY(-1px); }
-
-    .btn-soft {
-      color: #334155;
-      background: rgba(255,255,255,.86);
-      border: 1px solid rgba(57,42,80,.12);
-    }
-
-    .summary-card {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 380px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.94) 0%, rgba(248,245,255,.94) 100%);
-    }
-
-    .label {
-      font-size: 14px;
-      color: #697488;
-      margin-bottom: 8px;
-    }
-
-    .score {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .score-big {
-      font-size: clamp(56px, 8vw, 86px);
-      line-height: .95;
-      font-weight: 900;
-      letter-spacing: -.06em;
-    }
-
-    .score-out {
-      font-size: 22px;
-      color: #697488;
-      padding-bottom: 10px;
-    }
-
-    .stars { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-    .star { font-size: 29px; line-height: 1; color: #eadfcf; }
-    .star.filled { color: var(--star); }
-
-    .mini-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .mini {
-      padding: 16px;
-      border-radius: 22px;
-      border: 1px solid rgba(57,42,80,.08);
-      background: rgba(255,255,255,.72);
-    }
-
-    .mini .mini-label {
-      font-size: 13px;
-      color: #697488;
-      margin-bottom: 6px;
-    }
-
-    .mini .mini-value {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: -.04em;
-    }
-
-    .notice {
-      margin-top: 16px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      font-size: 14px;
-      line-height: 1.6;
-      background: rgba(110,217,200,.12);
-      border: 1px solid rgba(110,217,200,.35);
-      color: #11645a;
-    }
-
-    .section-head {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 6px 0 14px;
-    }
-
-    .section-head h2 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 38px);
-      letter-spacing: -.045em;
-    }
-
-    .section-head p {
-      margin: 0;
-      color: #697488;
-      font-size: 15px;
-    }
-
-    .reviews {
-      display: grid;
-      gap: 14px;
-    }
-
-    .review {
-      padding: 18px 18px 16px;
-      border-radius: 26px;
-      border: 1px solid rgba(57,42,80,.08);
-      background: rgba(255,255,255,.74);
-      box-shadow: 0 10px 24px rgba(31,36,48,.05);
-    }
-
-    .review-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .review-name {
-      font-size: 16px;
-      font-weight: 900;
-      letter-spacing: -.02em;
-    }
-
-    .review-date {
-      font-size: 13px;
-      color: #697488;
-    }
-
-    .review-body {
-      white-space: pre-wrap;
-      color: #505869;
-      line-height: 1.72;
-      font-size: 15px;
-    }
-
-    .empty {
-      padding: 24px;
-      border-radius: 26px;
-      border: 1px dashed rgba(57,42,80,.16);
-      background: rgba(255,255,255,.55);
-      text-align: center;
-      color: #697488;
-      line-height: 1.7;
-    }
-
-    .error {
-      margin-bottom: 14px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: var(--danger-bg);
-      border: 1px solid #f7c2bf;
-      color: var(--danger);
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .hidden { display: none !important; }
-
-    .history-shell {
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 18px;
-      align-items: start;
-    }
-
-    .calendar-card {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(244,251,255,.92) 100%);
-    }
-
-    .month-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .month-title {
-      font-size: 24px;
-      font-weight: 900;
-      letter-spacing: -.035em;
-    }
-
-    .icon-btn {
-      width: 42px;
-      height: 42px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 14px;
-      border: 1px solid rgba(57,42,80,.12);
-      background: rgba(255,255,255,.82);
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: 900;
-      color: #3c4658;
-    }
-
-    .icon-btn:disabled {
-      opacity: .42;
-      cursor: not-allowed;
-    }
-
-    .weekday-row,
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-    }
-
-    .weekday-row {
-      margin-bottom: 8px;
-    }
-
-    .weekday-cell {
-      text-align: center;
-      color: #7a8498;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 8px 0;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
-
-    .day-btn,
-    .day-blank {
-      aspect-ratio: 1 / 1;
-      border-radius: 18px;
-    }
-
-    .day-blank { background: transparent; }
-
-    .day-btn {
-      border: 1px solid rgba(57,42,80,.08);
-      background: rgba(255,255,255,.74);
-      cursor: pointer;
-      font-weight: 800;
-      color: #334155;
-      position: relative;
-      transition: .16s ease;
-    }
-
-    .day-btn:hover:not(:disabled) {
-      transform: translateY(-1px);
-      border-color: rgba(57,42,80,.18);
-    }
-
-    .day-btn.today {
-      background: linear-gradient(135deg, rgba(255,190,85,.28), rgba(255,140,177,.22));
-      border-color: rgba(255,190,85,.48);
-    }
-
-    .day-btn.selected {
-      color: white;
-      background: linear-gradient(135deg, #1f2430, #394255);
-      border-color: transparent;
-      box-shadow: 0 12px 24px rgba(31,36,48,.16);
-    }
-
-    .day-btn.disabled {
-      opacity: .34;
-      cursor: not-allowed;
-      background: rgba(255,255,255,.4);
-    }
-
-    .day-btn.has-data::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: 7px;
-      transform: translateX(-50%);
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--mint), var(--violet));
-    }
-
-    .history-summary {
-      display: grid;
-      gap: 18px;
-    }
-
-    .history-top {
-      background:
-        radial-gradient(circle at 90% 10%, rgba(255,140,177,.18), transparent 24%),
-        linear-gradient(180deg, rgba(255,255,255,.94) 0%, rgba(255,247,236,.94) 100%);
-    }
-
-    .picked-label {
-      display: inline-flex;
-      width: max-content;
-      padding: 9px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(143,150,255,.24);
-      background: rgba(243,244,255,.92);
-      color: #5059a5;
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 16px;
-    }
-
-    .picked-date {
-      font-size: clamp(34px, 6vw, 58px);
-      line-height: .95;
-      letter-spacing: -.05em;
-      font-weight: 900;
-      margin: 0;
-    }
-
-    .picked-sub {
-      margin-top: 12px;
-      max-width: 520px;
-      font-size: 16px;
-      line-height: 1.65;
-      color: #5f6678;
-    }
-
-    .history-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .history-stat {
-      padding: 18px;
-      border-radius: 22px;
-      background: rgba(255,255,255,.72);
-      border: 1px solid rgba(57,42,80,.08);
-    }
-
-    .history-stat .t {
-      color: #697488;
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    .history-stat .n {
-      font-size: 34px;
-      line-height: 1;
-      font-weight: 900;
-      letter-spacing: -.05em;
-    }
-
-    .launch-note {
-      margin-top: 14px;
-      color: #697488;
-      font-size: 13px;
-      line-height: 1.65;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 60;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      background: rgba(21, 24, 40, .42);
-      backdrop-filter: blur(8px);
-    }
-
-    .modal {
-      width: min(580px, 100%);
-      overflow: hidden;
-      border-radius: 30px;
-      background: rgba(255,255,255,.95);
-      border: 1px solid rgba(255,255,255,.72);
-      box-shadow: 0 28px 70px rgba(31,36,48,.22);
-    }
-
-    .modal-inner {
-      padding: 26px;
-    }
-
-    .modal h3 {
-      margin: 0 0 6px;
-      font-size: 32px;
-      line-height: 1;
-      letter-spacing: -.045em;
-    }
-
-    .modal p {
-      margin: 0 0 18px;
-      color: #697488;
-      line-height: 1.6;
-    }
-
-    .field {
-      margin-bottom: 14px;
-    }
-
-    .field label {
-      display: block;
-      margin-bottom: 8px;
-      color: #4b5565;
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .field input,
-    .field textarea {
-      width: 100%;
-      padding: 14px 15px;
-      border-radius: 18px;
-      border: 1px solid rgba(57,42,80,.12);
-      background: rgba(255,255,255,.92);
-      color: var(--ink);
-      outline: none;
-    }
-
-    .field textarea {
-      min-height: 140px;
-      resize: vertical;
-      line-height: 1.6;
-    }
-
-    .field input:focus,
-    .field textarea:focus {
-      border-color: rgba(255,190,85,.62);
-      box-shadow: 0 0 0 4px rgba(255,190,85,.16);
-    }
-
-    .star-picker {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      font-size: 40px;
-      line-height: 1;
-    }
-
-    .pick {
-      cursor: pointer;
-      color: #e8dcc7;
-      transition: transform .12s ease, color .12s ease;
-    }
-
-    .pick.active { color: var(--star); }
-    .pick:hover { transform: translateY(-1px); }
-
-    .modal-actions {
-      margin-top: 18px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 960px) {
-      .hero-grid,
-      .history-shell {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .wrap { padding: 22px 14px 70px; }
-      .card-inner,
-      .modal-inner { padding: 20px; }
-      .mini-grid,
-      .history-stats { grid-template-columns: 1fr; }
-      .day-btn, .day-blank { border-radius: 14px; }
-    }
-  </style>
+  <title>Daily Vibes - How was your day?</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="wrap">
-    <header class="topbar">
-      <div>
-        <div class="eyebrow"><span class="dot"></span> A tiny public mood archive</div>
-        <h1>How was your day?</h1>
-        <p class="subtitle">Review the current day like a product. Browse past days, open the calendar archive, and see how the internet felt one date at a time.</p>
-      </div>
-      <div class="tabs">
-        <button id="todayTab" class="tab-btn active" type="button">Today</button>
-        <button id="historyTab" class="tab-btn" type="button">History</button>
+  <div class="main-wrapper">
+    <!-- Fun Header -->
+    <header class="fun-header">
+      <div class="header-content">
+        <h1 class="app-title">Daily Vibes 🌈</h1>
+        <div class="nav-buttons">
+          <button id="todayTab" class="nav-btn nav-btn--active" type="button">Today</button>
+          <button id="historyTab" class="nav-btn" type="button">Calendar</button>
+        </div>
       </div>
     </header>
 
-    <div id="topError" class="error hidden"></div>
+    <!-- Error Message -->
+    <div id="topError" class="error-bubble hidden"></div>
 
-    <section id="todayScreen" class="screen active">
-      <div class="hero-grid">
-        <article class="card today-card">
-          <div class="gradient-strip"></div>
-          <div class="card-inner">
-            <div class="bubble" id="todayBubble">Live in UTC+8</div>
-            <div class="day-line" id="heroDate">Saturday</div>
-            <div class="date-line" id="heroMonthDay">April 11, 2026</div>
-            <p class="hero-copy" id="heroSub">A brand-new day is live on the internet. Leave a quick little review and see how everyone else felt about it.</p>
-            <div class="action-row">
-              <button id="openReviewBtn" class="btn btn-primary" type="button">Rate this day</button>
-              <button id="goHistoryBtn" class="btn btn-soft" type="button">Browse history</button>
-            </div>
+    <!-- Today Screen -->
+    <section id="todayScreen" class="screen screen--visible">
+      <div class="content-wrapper">
+        <!-- Greeting Card -->
+        <div class="greeting-box">
+          <div class="timezone-tag" id="todayBubble">🌍 UTC+8</div>
+          <h2 class="big-day" id="heroDate">Saturday</h2>
+          <p class="full-date" id="heroMonthDay">April 11, 2026</p>
+          <p class="greeting-text">How was your day? 😊</p>
+          <button id="openReviewBtn" class="action-btn" type="button">✨ Share Your Day</button>
+        </div>
+
+        <!-- Simple Stats -->
+        <div class="stats-box">
+          <div class="stat-item">
+            <span class="stat-label">Average Vibe</span>
+            <div class="stat-number" id="avgRating">—</div>
+            <div class="stars-display" id="avgStars"></div>
           </div>
-        </article>
-
-        <aside class="card summary-card">
-          <div class="gradient-strip"></div>
-          <div class="card-inner">
-            <div class="label">Today’s average rating</div>
-            <div class="score">
-              <div class="score-big" id="avgRating">—</div>
-              <div class="score-out">/ 5</div>
-            </div>
-            <div class="stars" id="avgStars"></div>
-
-            <div class="mini-grid">
-              <div class="mini">
-                <div class="mini-label">Total reviews</div>
-                <div class="mini-value" id="reviewCount">0</div>
-              </div>
-              <div class="mini">
-                <div class="mini-label">Mode</div>
-                <div class="mini-value">Today</div>
-              </div>
-            </div>
-
-            <div class="notice">Only the current UTC+8 day can be reviewed. Past dates stay readable as an archive.</div>
+          <div class="stat-item">
+            <span class="stat-label">Total Vibes</span>
+            <div class="stat-number" id="reviewCount">0</div>
           </div>
-        </aside>
-      </div>
+        </div>
 
-      <div class="section-head">
-        <div>
-          <h2>Today’s reviews</h2>
-          <p>See what people thought about this day.</p>
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+          <h3 class="section-title">✨ Today's Vibes</h3>
+          <div id="todayReviewsList" class="reviews-container"></div>
         </div>
       </div>
-      <div id="todayReviewsList" class="reviews"></div>
     </section>
 
+    <!-- Calendar Screen -->
     <section id="historyScreen" class="screen">
-      <div class="history-shell">
-        <aside class="card calendar-card">
-          <div class="gradient-strip"></div>
-          <div class="card-inner">
-            <div class="section-head" style="margin-top:0">
-              <div>
-                <h2 style="font-size:30px">History</h2>
-                <p>Calendar archive starting from launch day.</p>
-              </div>
-            </div>
+      <div class="content-wrapper calendar-wrapper">
+        <!-- Calendar Sidebar -->
+        <aside class="calendar-sidebar">
+          <h3 class="calendar-title">📅 Calendar</h3>
 
-            <div class="month-head">
-              <button id="prevMonthBtn" class="icon-btn" type="button">←</button>
-              <div class="month-title" id="monthTitle">April 2026</div>
-              <button id="nextMonthBtn" class="icon-btn" type="button">→</button>
-            </div>
-
-            <div class="weekday-row">
-              <div class="weekday-cell">Sun</div>
-              <div class="weekday-cell">Mon</div>
-              <div class="weekday-cell">Tue</div>
-              <div class="weekday-cell">Wed</div>
-              <div class="weekday-cell">Thu</div>
-              <div class="weekday-cell">Fri</div>
-              <div class="weekday-cell">Sat</div>
-            </div>
-            <div id="calendarGrid" class="calendar-grid"></div>
-
-            <div class="launch-note">Archive starts on <strong>April 11, 2026</strong>, the day the site went live. Dates before that are not part of the calendar.</div>
+          <div class="month-nav">
+            <button id="prevMonthBtn" class="arrow-btn" type="button">←</button>
+            <span class="month-display" id="monthTitle">April 2026</span>
+            <button id="nextMonthBtn" class="arrow-btn" type="button">→</button>
           </div>
+
+          <div class="weekdays">
+            <div class="weekday">S</div>
+            <div class="weekday">M</div>
+            <div class="weekday">T</div>
+            <div class="weekday">W</div>
+            <div class="weekday">T</div>
+            <div class="weekday">F</div>
+            <div class="weekday">S</div>
+          </div>
+
+          <div id="calendarGrid" class="calendar-dates"></div>
+
+          <p class="calendar-note">Started on <strong>April 11, 2026</strong></p>
         </aside>
 
-        <div class="history-summary">
-          <article class="card history-top">
-            <div class="gradient-strip"></div>
-            <div class="card-inner">
-              <div class="picked-label" id="historyModePill">Selected day</div>
-              <h2 class="picked-date" id="pickedDateTitle">Saturday, April 11, 2026</h2>
-              <p class="picked-sub" id="pickedDateSub">Browse ratings and reviews for any date in the archive. Past days are read-only by design.</p>
+        <!-- Calendar Content -->
+        <div class="calendar-content">
+          <div class="picked-header">
+            <span class="picked-label">Selected Day</span>
+            <h2 class="picked-date" id="pickedDateTitle">Saturday, April 11, 2026</h2>
+            <p class="picked-text" id="pickedDateSub">Pick a day to see the vibes!</p>
+          </div>
 
-              <div class="history-stats">
-                <div class="history-stat">
-                  <div class="t">Average rating</div>
-                  <div class="n" id="historyAvg">—</div>
-                  <div class="stars" id="historyStars"></div>
-                </div>
-                <div class="history-stat">
-                  <div class="t">Total reviews</div>
-                  <div class="n" id="historyCount">0</div>
-                </div>
-              </div>
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <span class="mini-label">Average</span>
+              <span class="mini-value" id="historyAvg">—</span>
+              <div class="stars-display" id="historyStars"></div>
             </div>
-          </article>
-
-          <div class="section-head">
-            <div>
-              <h2 id="historyReviewsHeading">Reviews for Saturday, April 11, 2026</h2>
-              <p>The archive is browse-only. New reviews can only be posted for today.</p>
+            <div class="mini-stat">
+              <span class="mini-label">Count</span>
+              <span class="mini-value" id="historyCount">0</span>
             </div>
           </div>
 
-          <div id="historyReviewsList" class="reviews"></div>
+          <div class="reviews-section">
+            <h3 class="section-title" id="historyReviewsHeading">Today's Vibes</h3>
+            <div id="historyReviewsList" class="reviews-container"></div>
+          </div>
         </div>
       </div>
     </section>
   </div>
 
+  <!-- Fun Modal -->
   <div id="reviewModal" class="modal-backdrop hidden" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="gradient-strip"></div>
-      <div class="modal-inner">
-        <h3 id="modalTitle">Review this day</h3>
-        <p id="modalDateText">Leave a tiny note for today.</p>
+    <div class="fun-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="close-btn" id="closeModalBtn" type="button">✕</button>
 
-        <div class="field">
-          <label>Your rating</label>
-          <div id="starPicker" class="star-picker" aria-label="Choose rating"></div>
+      <div class="modal-body">
+        <h3 id="modalTitle" class="modal-title">Tell us about your day!</h3>
+        <p id="modalDateText" class="modal-subtitle">How was it?</p>
+
+        <div class="form-field">
+          <label class="field-label">Rate your day ⭐</label>
+          <div id="starPicker" class="star-selector"></div>
         </div>
 
-        <div class="field">
-          <label for="nameInput">Your name</label>
-          <input id="nameInput" type="text" maxlength="32" placeholder="e.g. Alex" />
+        <div class="form-field">
+          <label class="field-label" for="nameInput">Your name</label>
+          <input 
+            id="nameInput" 
+            type="text" 
+            maxlength="32" 
+            class="text-input"
+            placeholder="What's your name?" 
+          />
         </div>
 
-        <div class="field">
-          <label for="reviewInput">Your review</label>
-          <textarea id="reviewInput" maxlength="280" placeholder="What was good, weird, exhausting, funny, or unforgettable about this day?"></textarea>
+        <div class="form-field">
+          <label class="field-label" for="reviewInput">What happened? 📝</label>
+          <textarea 
+            id="reviewInput" 
+            maxlength="280" 
+            class="text-area"
+            placeholder="Tell us a fun moment from your day!"
+          ></textarea>
         </div>
 
-        <div id="modalError" class="error hidden" style="margin-bottom:0"></div>
+        <div id="modalError" class="error-bubble hidden"></div>
 
-        <div class="modal-actions">
-          <button id="closeModalBtn" class="btn btn-soft" type="button">Cancel</button>
-          <button id="submitReviewBtn" class="btn btn-primary" type="button">Submit review</button>
+        <div class="modal-buttons">
+          <button id="closeModalBtn2" class="btn-secondary" type="button">Cancel</button>
+          <button id="submitReviewBtn" class="btn-primary" type="button">Post It! 🎉</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      query,
-      where,
-      getDocs,
-      serverTimestamp
-    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAOFO7vGOy6j_iaTLOksIz-ACk6NAuvK7o",
-      authDomain: "howwasyourday-48ed0.firebaseapp.com",
-      projectId: "howwasyourday-48ed0",
-      storageBucket: "howwasyourday-48ed0.firebasestorage.app",
-      messagingSenderId: "520047025531",
-      appId: "1:520047025531:web:c6f557c8b77d112b36f1de",
-      measurementId: "G-SE6F17NCP4"
-    };
-
-    const hasFirebaseConfig = !!firebaseConfig.apiKey && !!firebaseConfig.projectId && !!firebaseConfig.appId;
-    const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
-    const db = hasFirebaseConfig ? getFirestore(app) : null;
-
-    const TIMEZONE = 'Asia/Singapore';
-    const LAUNCH_DATE_KEY = '2026-04-11';
-
-    const els = {
-      topError: document.getElementById('topError'),
-      todayTab: document.getElementById('todayTab'),
-      historyTab: document.getElementById('historyTab'),
-      todayScreen: document.getElementById('todayScreen'),
-      historyScreen: document.getElementById('historyScreen'),
-      todayBubble: document.getElementById('todayBubble'),
-      heroDate: document.getElementById('heroDate'),
-      heroMonthDay: document.getElementById('heroMonthDay'),
-      heroSub: document.getElementById('heroSub'),
-      openReviewBtn: document.getElementById('openReviewBtn'),
-      goHistoryBtn: document.getElementById('goHistoryBtn'),
-      avgRating: document.getElementById('avgRating'),
-      avgStars: document.getElementById('avgStars'),
-      reviewCount: document.getElementById('reviewCount'),
-      todayReviewsList: document.getElementById('todayReviewsList'),
-      prevMonthBtn: document.getElementById('prevMonthBtn'),
-      nextMonthBtn: document.getElementById('nextMonthBtn'),
-      monthTitle: document.getElementById('monthTitle'),
-      calendarGrid: document.getElementById('calendarGrid'),
-      pickedDateTitle: document.getElementById('pickedDateTitle'),
-      pickedDateSub: document.getElementById('pickedDateSub'),
-      historyAvg: document.getElementById('historyAvg'),
-      historyStars: document.getElementById('historyStars'),
-      historyCount: document.getElementById('historyCount'),
-      historyReviewsHeading: document.getElementById('historyReviewsHeading'),
-      historyReviewsList: document.getElementById('historyReviewsList'),
-      reviewModal: document.getElementById('reviewModal'),
-      modalDateText: document.getElementById('modalDateText'),
-      starPicker: document.getElementById('starPicker'),
-      nameInput: document.getElementById('nameInput'),
-      reviewInput: document.getElementById('reviewInput'),
-      modalError: document.getElementById('modalError'),
-      closeModalBtn: document.getElementById('closeModalBtn'),
-      submitReviewBtn: document.getElementById('submitReviewBtn')
-    };
-
-    let selectedRating = 0;
-    let currentView = 'today';
-    let selectedHistoryDateKey = getTodayKeyUTC8();
-    let displayedMonth = getMonthState(selectedHistoryDateKey);
-    const datesWithData = new Set();
-
-    function getDatePartsInUTC8(date = new Date()) {
-      const parts = new Intl.DateTimeFormat('en-US', {
-        timeZone: TIMEZONE,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        weekday: 'long'
-      }).formatToParts(date);
-      return Object.fromEntries(parts.filter(p => p.type !== 'literal').map(p => [p.type, p.value]));
-    }
-
-    function getTodayKeyUTC8() {
-      const p = getDatePartsInUTC8(new Date());
-      return `${p.year}-${p.month}-${p.day}`;
-    }
-
-    function keyToUTCDate(dateKey) {
-      const [y, m, d] = dateKey.split('-').map(Number);
-      return new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
-    }
-
-    function formatPrettyDate(dateKey) {
-      return new Intl.DateTimeFormat('en-US', {
-        timeZone: TIMEZONE,
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      }).format(keyToUTCDate(dateKey));
-    }
-
-    function getWeekday(dateKey) {
-      return new Intl.DateTimeFormat('en-US', { timeZone: TIMEZONE, weekday: 'long' }).format(keyToUTCDate(dateKey));
-    }
-
-    function getMonthDay(dateKey) {
-      return new Intl.DateTimeFormat('en-US', {
-        timeZone: TIMEZONE,
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      }).format(keyToUTCDate(dateKey));
-    }
-
-    function monthLabel(year, monthIndex) {
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'UTC'
-      }).format(new Date(Date.UTC(year, monthIndex, 1)));
-    }
-
-    function getMonthState(dateKey) {
-      const [y, m] = dateKey.split('-').map(Number);
-      return { year: y, monthIndex: m - 1 };
-    }
-
-    function stateToKey(year, monthIndex, day = 1) {
-      const mm = String(monthIndex + 1).padStart(2, '0');
-      const dd = String(day).padStart(2, '0');
-      return `${year}-${mm}-${dd}`;
-    }
-
-    function compareKeys(a, b) {
-      return a.localeCompare(b);
-    }
-
-    function escapeHtml(str = '') {
-      return str.replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
-    }
-
-    function renderStars(target, value, max = 5) {
-      target.innerHTML = Array.from({ length: max }, (_, i) => `<span class="star ${i < Math.round(value) ? 'filled' : ''}">★</span>`).join('');
-    }
-
-    function setTopError(msg = '') {
-      if (!msg) {
-        els.topError.classList.add('hidden');
-        els.topError.textContent = '';
-        return;
-      }
-      els.topError.textContent = msg;
-      els.topError.classList.remove('hidden');
-    }
-
-    function setModalError(msg = '') {
-      if (!msg) {
-        els.modalError.classList.add('hidden');
-        els.modalError.textContent = '';
-        return;
-      }
-      els.modalError.textContent = msg;
-      els.modalError.classList.remove('hidden');
-    }
-
-    function buildStarPicker() {
-      els.starPicker.innerHTML = Array.from({ length: 5 }, (_, i) => `<span class="pick" data-value="${i + 1}">★</span>`).join('');
-      updatePicker();
-      [...els.starPicker.querySelectorAll('.pick')].forEach(node => {
-        node.addEventListener('click', () => {
-          selectedRating = Number(node.dataset.value);
-          updatePicker();
-        });
-      });
-    }
-
-    function updatePicker() {
-      [...els.starPicker.querySelectorAll('.pick')].forEach(node => {
-        node.classList.toggle('active', Number(node.dataset.value) <= selectedRating);
-      });
-    }
-
-    function openModal() {
-      setTopError('');
-      if (currentView !== 'today' || selectedHistoryDateKey !== getTodayKeyUTC8()) {
-        setTopError('You can only submit a review for the current active UTC+8 day.');
-        return;
-      }
-      els.modalDateText.textContent = `Leave a tiny note for ${formatPrettyDate(getTodayKeyUTC8())}.`;
-      els.reviewModal.classList.remove('hidden');
-      els.reviewModal.setAttribute('aria-hidden', 'false');
-      setModalError('');
-    }
-
-    function closeModal() {
-      els.reviewModal.classList.add('hidden');
-      els.reviewModal.setAttribute('aria-hidden', 'true');
-      setModalError('');
-    }
-
-    function switchView(view) {
-      currentView = view;
-      els.todayTab.classList.toggle('active', view === 'today');
-      els.historyTab.classList.toggle('active', view === 'history');
-      els.todayScreen.classList.toggle('active', view === 'today');
-      els.historyScreen.classList.toggle('active', view === 'history');
-      if (view === 'today') {
-        selectedHistoryDateKey = getTodayKeyUTC8();
-      }
-      displayedMonth = getMonthState(selectedHistoryDateKey);
-      renderStaticShell();
-      if (view === 'today') {
-        loadTodayReviews();
-      } else {
-        renderCalendar();
-        loadHistoryReviews(selectedHistoryDateKey);
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function renderStaticShell() {
-      const todayKey = getTodayKeyUTC8();
-      els.todayBubble.textContent = 'Live in UTC+8';
-      els.heroDate.textContent = getWeekday(todayKey);
-      els.heroMonthDay.textContent = getMonthDay(todayKey);
-      els.heroSub.textContent = 'A brand-new day is live on the internet. Leave a quick little review and see how everyone else felt about it.';
-      els.pickedDateTitle.textContent = formatPrettyDate(selectedHistoryDateKey);
-      els.pickedDateSub.textContent = selectedHistoryDateKey === todayKey
-        ? 'This is today in UTC+8. You can still browse it here, but the review action stays on the Today tab.'
-        : 'A past date from the archive. You can read ratings and reviews here, but only today can receive new ones.';
-      els.historyReviewsHeading.textContent = `Reviews for ${formatPrettyDate(selectedHistoryDateKey)}`;
-      els.monthTitle.textContent = monthLabel(displayedMonth.year, displayedMonth.monthIndex);
-    }
-
-    function renderReviewCards(target, reviews, emptyMessage) {
-      if (!reviews.length) {
-        target.innerHTML = `<div class="empty">${emptyMessage}</div>`;
-        return;
-      }
-      target.innerHTML = reviews.map(review => {
-        const created = review.createdAt?.toDate ? review.createdAt.toDate() : null;
-        const createdText = created ? new Intl.DateTimeFormat('en-US', {
-          timeZone: TIMEZONE,
-          month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
-        }).format(created) : 'Just now';
-        const stars = Array.from({ length: 5 }, (_, i) => `<span class="star ${i < review.rating ? 'filled' : ''}">★</span>`).join('');
-        return `
-          <article class="review">
-            <div class="review-top">
-              <div>
-                <div class="review-name">${escapeHtml(review.name || 'Anonymous')}</div>
-                <div class="stars">${stars}</div>
-              </div>
-              <div class="review-date">${createdText}</div>
-            </div>
-            <div class="review-body">${escapeHtml(review.text || '')}</div>
-          </article>
-        `;
-      }).join('');
-    }
-
-    function renderSummary(targetAvg, targetStars, targetCount, reviews) {
-      const count = reviews.length;
-      const avg = count ? reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / count : 0;
-      targetAvg.textContent = count ? avg.toFixed(2) : '—';
-      targetCount.textContent = new Intl.NumberFormat('en-US').format(count);
-      renderStars(targetStars, avg || 0);
-    }
-
-    async function fetchReviewsByDate(dateKey) {
-      if (!hasFirebaseConfig) throw new Error('Firebase not connected');
-      const reviewsRef = collection(db, 'reviews');
-      const q = query(reviewsRef, where('dateKey', '==', dateKey));
-      const snap = await getDocs(q);
-      return snap.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
-        .sort((a, b) => {
-          const aMs = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-          const bMs = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-          return bMs - aMs;
-        });
-    }
-
-    async function loadTodayReviews() {
-      els.todayReviewsList.innerHTML = '<div class="empty">Loading today’s reviews…</div>';
-      if (!hasFirebaseConfig) {
-        setTopError('Firebase is not connected yet. Once connected, live shared reviews will appear here.');
-        renderSummary(els.avgRating, els.avgStars, els.reviewCount, []);
-        renderReviewCards(els.todayReviewsList, [], 'Firebase is not connected yet.');
-        return;
-      }
-      setTopError('');
-      try {
-        const reviews = await fetchReviewsByDate(getTodayKeyUTC8());
-        renderSummary(els.avgRating, els.avgStars, els.reviewCount, reviews);
-        renderReviewCards(els.todayReviewsList, reviews, 'No reviews yet for today. Be the first one.');
-      } catch (err) {
-        console.error(err);
-        setTopError('Could not load today’s reviews yet. Check your Firestore setup or rules.');
-        renderSummary(els.avgRating, els.avgStars, els.reviewCount, []);
-        renderReviewCards(els.todayReviewsList, [], 'No reviews could be loaded right now.');
-      }
-    }
-
-    async function loadHistoryReviews(dateKey) {
-      els.historyReviewsList.innerHTML = '<div class="empty">Loading reviews…</div>';
-      if (!hasFirebaseConfig) {
-        renderSummary(els.historyAvg, els.historyStars, els.historyCount, []);
-        renderReviewCards(els.historyReviewsList, [], 'Firebase is not connected yet.');
-        return;
-      }
-      try {
-        const reviews = await fetchReviewsByDate(dateKey);
-        if (reviews.length) datesWithData.add(dateKey);
-        renderSummary(els.historyAvg, els.historyStars, els.historyCount, reviews);
-        renderReviewCards(els.historyReviewsList, reviews, 'No reviews were posted on this date.');
-        renderCalendar();
-      } catch (err) {
-        console.error(err);
-        renderSummary(els.historyAvg, els.historyStars, els.historyCount, []);
-        renderReviewCards(els.historyReviewsList, [], 'No reviews could be loaded right now.');
-      }
-    }
-
-    function renderCalendar() {
-      const todayKey = getTodayKeyUTC8();
-      const launch = getMonthState(LAUNCH_DATE_KEY);
-      const atLaunchMonth = displayedMonth.year === launch.year && displayedMonth.monthIndex === launch.monthIndex;
-      const todayMonth = getMonthState(todayKey);
-      const atTodayMonth = displayedMonth.year === todayMonth.year && displayedMonth.monthIndex === todayMonth.monthIndex;
-
-      els.prevMonthBtn.disabled = atLaunchMonth;
-      els.nextMonthBtn.disabled = atTodayMonth;
-      els.monthTitle.textContent = monthLabel(displayedMonth.year, displayedMonth.monthIndex);
-
-      const firstDay = new Date(Date.UTC(displayedMonth.year, displayedMonth.monthIndex, 1));
-      const daysInMonth = new Date(Date.UTC(displayedMonth.year, displayedMonth.monthIndex + 1, 0)).getUTCDate();
-      const startWeekday = firstDay.getUTCDay();
-      const cells = [];
-
-      for (let i = 0; i < startWeekday; i++) {
-        cells.push('<div class="day-blank"></div>');
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateKey = stateToKey(displayedMonth.year, displayedMonth.monthIndex, day);
-        const disabled = compareKeys(dateKey, LAUNCH_DATE_KEY) < 0 || compareKeys(dateKey, todayKey) > 0;
-        const classes = [
-          'day-btn',
-          disabled ? 'disabled' : '',
-          dateKey === todayKey ? 'today' : '',
-          dateKey === selectedHistoryDateKey ? 'selected' : '',
-          datesWithData.has(dateKey) ? 'has-data' : ''
-        ].filter(Boolean).join(' ');
-        cells.push(`<button class="${classes}" type="button" data-date="${dateKey}" ${disabled ? 'disabled' : ''}>${day}</button>`);
-      }
-
-      els.calendarGrid.innerHTML = cells.join('');
-      [...els.calendarGrid.querySelectorAll('.day-btn:not(.disabled)')].forEach(btn => {
-        btn.addEventListener('click', () => {
-          selectedHistoryDateKey = btn.dataset.date;
-          renderStaticShell();
-          renderCalendar();
-          loadHistoryReviews(selectedHistoryDateKey);
-        });
-      });
-    }
-
-    async function submitReview() {
-      setModalError('');
-      if (!hasFirebaseConfig) {
-        setModalError('Firebase is not connected yet. Add your config first, then submitting will work.');
-        return;
-      }
-      const name = els.nameInput.value.trim();
-      const text = els.reviewInput.value.trim();
-      if (!selectedRating) return setModalError('Please choose a star rating.');
-      if (!name) return setModalError('Please enter your name.');
-      if (!text) return setModalError('Please write a short review.');
-      if (name.length > 32) return setModalError('Your name is a bit too long.');
-      if (text.length > 280) return setModalError('Please keep your review under 280 characters.');
-
-      try {
-        const todayKey = getTodayKeyUTC8();
-        await addDoc(collection(db, 'reviews'), {
-          dateKey: todayKey,
-          rating: selectedRating,
-          name,
-          text,
-          createdAt: serverTimestamp()
-        });
-        datesWithData.add(todayKey);
-        els.nameInput.value = '';
-        els.reviewInput.value = '';
-        selectedRating = 0;
-        updatePicker();
-        closeModal();
-        selectedHistoryDateKey = todayKey;
-        displayedMonth = getMonthState(todayKey);
-        renderStaticShell();
-        loadTodayReviews();
-      } catch (err) {
-        console.error(err);
-        setModalError('Could not submit review yet. Check your Firestore rules and Firebase config.');
-      }
-    }
-
-    els.todayTab.addEventListener('click', () => switchView('today'));
-    els.historyTab.addEventListener('click', () => switchView('history'));
-    els.goHistoryBtn.addEventListener('click', () => switchView('history'));
-    els.openReviewBtn.addEventListener('click', openModal);
-    els.closeModalBtn.addEventListener('click', closeModal);
-    els.submitReviewBtn.addEventListener('click', submitReview);
-    els.reviewModal.addEventListener('click', (e) => { if (e.target === els.reviewModal) closeModal(); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-
-    els.prevMonthBtn.addEventListener('click', () => {
-      const nextIndex = displayedMonth.monthIndex - 1;
-      displayedMonth = nextIndex < 0
-        ? { year: displayedMonth.year - 1, monthIndex: 11 }
-        : { year: displayedMonth.year, monthIndex: nextIndex };
-      renderCalendar();
-      renderStaticShell();
-    });
-
-    els.nextMonthBtn.addEventListener('click', () => {
-      const nextIndex = displayedMonth.monthIndex + 1;
-      displayedMonth = nextIndex > 11
-        ? { year: displayedMonth.year + 1, monthIndex: 0 }
-        : { year: displayedMonth.year, monthIndex: nextIndex };
-      renderCalendar();
-      renderStaticShell();
-    });
-
-    buildStarPicker();
-    renderStaticShell();
-    loadTodayReviews();
-  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
